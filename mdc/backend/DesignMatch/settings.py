@@ -15,6 +15,10 @@ from celery.schedules import crontab
 import apirest.tasks
 import os
 from pathlib import Path
+from helpers import env_vars
+
+# list of secret keys stored in the gcp secret manager 
+env_keys = env_vars.access_secret_version()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 # BASE_DIR = Path(__file__).resolve(strict=True).parent.parent
@@ -25,7 +29,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/3.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.getenv("DJANGO_PASSWORD")
+SECRET_KEY = env_keys["DJANGO_PASSWORD"]
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
@@ -120,11 +124,11 @@ WSGI_APPLICATION = 'DesignMatch.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': os.getenv('DB_NAME_MDC'), 
-        'USER': os.getenv('DB_USER_MDC'), 
-        'PASSWORD': os.getenv('DB_PASSWORD_MDC'),
-        'HOST': os.getenv('IP_DATABASE_MDC'), 
-        'PORT': os.getenv('DB_PORT_MDC'),
+        'NAME': env_keys['DB_NAME_MDC'],
+        'USER': env_keys['DB_USER_MDC'],
+        'PASSWORD': env_keys['DB_PASSWORD_MDC'],
+        'HOST': env_keys['DB_HOST_MDC'],
+        'PORT': env_keys['DB_PORT_MDC'],
     }
 }
 
@@ -150,11 +154,11 @@ AUTH_PASSWORD_VALIDATORS = [
 # Enviar correos electronicos:
 EMAIL_BACKEND = 'sendgrid_backend.SendgridBackend'
 EMAIL_USE_TLS = True
-EMAIL_HOST = os.getenv("SENDGRID_HOST")
-EMAIL_HOST_USER = os.getenv("SENDGRID_USER")
-EMAIL_HOST_PASSWORD = os.getenv("SENDGRID_PASSWORD")
-EMAIL_PORT = os.getenv("SENDGRID_PORT")
-SENDGRID_API_KEY = os.getenv("SENDGRID_API_KEY")
+EMAIL_HOST = env_keys["SENDGRID_HOST"]
+EMAIL_HOST_USER = env_keys["SENDGRID_USER"]
+EMAIL_HOST_PASSWORD = env_keys["SENDGRID_PASSWORD"]
+EMAIL_PORT = env_keys["SENDGRID_PORT"]
+SENDGRID_API_KEY = env_keys["SENDGRID_API_KEY"]
 
 # Internationalization
 # https://docs.djangoproject.com/en/3.1/topics/i18n/
