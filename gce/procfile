@@ -1,0 +1,1 @@
+hello: nohup /opt/app/gce/env/bin/python /opt/app/mdc/backend/manage.py runserver 0:8080
