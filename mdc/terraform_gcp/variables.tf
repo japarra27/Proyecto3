@@ -69,14 +69,41 @@ variable "public_subnet_cidr_1" {
   description = "Public subnet CIDR 1"
 }
 
+# define Private subnet
+variable "private_subnet_cidr_1" {
+  type = string
+  description = "Private subnet CIDR 1"
+}
+
 # specific cidr postgres instacne
 variable "db_instance_access_cidr" {
   description = "The IPv4 CIDR to provide access the database instance"
   type        = string
 }
 
-# gcp Cloud-SQL private ip
+# gcp nfs private ip
 variable "private_ip_nfs" {
   description = "private ip adress from VPC to the nfs"
   type        = string
+}
+
+# maximum number of VMs for load balancer autoscale
+variable "lb_max_replicas" {
+  type        = string
+  description = "Maximum number of VMs for autoscale"
+  default     = "4"
+}
+
+# minimum number of VMs for load balancer autoscale
+variable "lb_min_replicas" {
+  type        = string
+  description = "Minimum number of VMs for autoscale"
+  default     = "1"
+}
+
+# number of seconds that the autoscaler should wait before it starts collecting information
+variable "lb_cooldown_period" {
+  type        = string
+  description = "The number of seconds that the autoscaler should wait before it starts collecting information from a new instance"
+  default     = "60"
 }
