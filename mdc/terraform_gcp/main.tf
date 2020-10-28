@@ -139,6 +139,33 @@ resource "google_compute_instance" "apps_mdc_back" {
   tags = ["http-server", "https-server", "ssh", "rdp"]
 }
 
+################ WORKERS ###################
+
+# create the compute engine instance backend - MDC
+resource "google_compute_instance" "apps_mdc_worker" {
+  count        = 1
+  name         = "${var.app_name}-worker-${count.index + 1}"
+  machine_type = "n2-standard-2"
+  zone         = var.zone_gcp
+  allow_stopping_for_update = true
+
+  boot_disk {
+    initialize_params {
+      image = "ubuntu-1804-bionic-v20200908"
+    }
+  }
+
+  metadata_startup_script = file("../create_workers.sh")
+
+  network_interface {
+    network     = google_compute_network.vpc.name
+    subnetwork  = google_compute_subnetwork.public_subnet_1.name
+
+    access_config {
+    }
+  }
+}
+
 ################ FRONTEND ###################
 
 # Compute address - static_ip frontend - MDC
@@ -179,7 +206,8 @@ resource "google_compute_instance" "apps_mdc_front" {
 
 # Compute address - static_ip fileserver - MDC
 resource "google_compute_address" "static_mdc_nfs" {
-  name = "ipv4-address-static-ip-mdcnfs"
+  name      = "ipv4-address-static-ip-mdcnfs"
+  address   = var.private_ip_nfs
 }
 
 # create the compute engine instance fileserver - MDC
@@ -241,23 +269,11 @@ resource "google_sql_database_instance" "postgres_mdc" {
       
     ip_configuration {
       ipv4_enabled = "true"
+      private_network = var.private_ip_db
       authorized_networks {
-        value = var.db_instance_access_cidr
+        value = var.public_subnet_cidr_1
         }
       }
-
-    # ip_configuration {
-    #   ipv4_enabled = "true"
-    #   dynamic "authorized_networks" {
-    #     for_each = google_compute_instance.apps_mdc_back
-    #     iterator = apps
-      
-    #     content {
-    #       name  = apps.value.name
-    #       value = apps.value.network_interface.0.access_config.0.nat_ip
-    #       }
-    #  }
-    #}
   }
 }
 

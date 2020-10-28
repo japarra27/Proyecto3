@@ -50,6 +50,12 @@ variable "password" {
   type        = string
 }
 
+# gcp Cloud-SQL private ip
+variable "private_ip_db" {
+  description = "private ip adress from VPC to the database"
+  type        = string
+}
+
 # gcp compute engine - number of instances
 variable "node_count" {
  type    = number
@@ -64,7 +70,13 @@ variable "public_subnet_cidr_1" {
 }
 
 # specific cidr postgres instacne
-variable db_instance_access_cidr {
+variable "db_instance_access_cidr" {
   description = "The IPv4 CIDR to provide access the database instance"
-  default = "0.0.0.0/0"
+  type        = string
+}
+
+# gcp Cloud-SQL private ip
+variable "private_ip_nfs" {
+  description = "private ip adress from VPC to the nfs"
+  type        = string
 }
