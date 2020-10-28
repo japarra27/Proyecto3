@@ -26,7 +26,6 @@ chown -R pythonapp:pythonapp /opt/app
 # Put supervisor configuration in proper place
 cp /opt/app/gce/python-app.conf /etc/supervisor/conf.d/python-app.conf
 
-# Start service via supervisorctl
-supervisorctl reread
-supervisorctl update
+# Start service via nohup
+sudo nohup /opt/app/gce/env/bin/python /opt/app/mdc/backend/manage.py runserver 0:8080
 # [END getting_started_gce_startup_script]
