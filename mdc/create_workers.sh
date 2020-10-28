@@ -27,6 +27,9 @@ chown -R pythonapp:pythonapp /opt/app
 # Put supervisor configuration in proper place
 sudo cp /opt/app/gce/celery.conf /etc/supervisor/conf.d/celery.conf
 
+# permision back project
+sudo chmod 777 -R /opt/app
+
 # mount the nfs
 sudo mkdir -p /mnt/fileserver
 sudo mount 10.128.0.2:/mnt/fileserver /mnt/fileserver

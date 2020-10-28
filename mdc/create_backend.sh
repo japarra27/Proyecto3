@@ -22,6 +22,7 @@ source /opt/app/gce/env/bin/activate
 
 # Set ownership to newly created account
 chown -R pythonapp:pythonapp /opt/app
+sudo chmod 777 -R /opt/app
 
 # Put supervisor configuration in proper place
 cp /opt/app/gce/python-app.conf /etc/supervisor/conf.d/python-app.conf
