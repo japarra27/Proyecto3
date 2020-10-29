@@ -336,9 +336,14 @@ resource "google_compute_instance" "apps_mdc_nfs" {
 ################### DATABASE CONFIGURATION ######################
 #################################################################
 
+#Variable aleatoria
+resource "random_id" "db_name_suffix" {
+  byte_length = 4
+  }
+
 # database creation
 resource "google_sql_database_instance" "postgres_mdc" {
-  name             = "postgres-instance-designmatch"
+  name             = "postgres-instance-designmatch-${random_id.db_name_suffix.hex}"
   database_version = "POSTGRES_12"
   deletion_protection = false 
 
@@ -362,7 +367,8 @@ resource "google_sql_database_instance" "postgres_mdc" {
       }
       
     ip_configuration {
-      ipv4_enabled = "true"
+      private_network = google_compute_network.vpc.self_link
+      ipv4_enabled = true
       authorized_networks {
         value = "0.0.0.0/0"
         }
