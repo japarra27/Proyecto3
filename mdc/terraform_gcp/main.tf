@@ -36,15 +36,15 @@ resource "google_compute_network" "vpc" {
   routing_mode = "GLOBAL"
 }
 
-# create private subnet
-resource "google_compute_subnetwork" "private_subnet_1" {
- provider = google-beta
- purpose = "PRIVATE"
- name = "${var.app_name}-private-subnet-1"
- ip_cidr_range = var.private_subnet_cidr_1
- network = google_compute_network.vpc.name
- region = var.region_gcp
-}
+# # create private subnet
+# resource "google_compute_subnetwork" "private_subnet_1" {
+#  provider = google-beta
+#  purpose = "PRIVATE"
+#  name = "${var.app_name}-private-subnet-1"
+#  ip_cidr_range = var.private_subnet_cidr_1
+#  network = google_compute_network.vpc.name
+#  region = var.region_gcp
+# }
 
 # create public subnet
 resource "google_compute_subnetwork" "public_subnet_1" {
@@ -140,7 +140,7 @@ resource "google_compute_firewall" "allow-internal" {
     ports    = ["0-65535"]
   }
   source_ranges = [
-    "${var.public_subnet_cidr_1}"
+    var.public_subnet_cidr_1
   ]
 }
 
@@ -152,7 +152,7 @@ resource "google_compute_firewall" "allow-internal" {
 
 # Create backend template
 resource "google_compute_instance_template" "template_mdc_backend" {
-  name = "${var.app_name}-mdc-backend-template"
+  name = "${var.app_name}-backend-template"
   description = "This template is used to create django backend"
   instance_description = "Web Server running Apache"
   can_ip_forward = false
@@ -170,20 +170,20 @@ resource "google_compute_instance_template" "template_mdc_backend" {
   
   network_interface {
     network = google_compute_network.vpc.name
-    subnetwork = google_compute_subnetwork.private_subnet_1.name
+    subnetwork = google_compute_subnetwork.public_subnet_1.name
   }
   
   lifecycle {
-    create_before_destroy = true
+    create_before_destroy = false
   }
   metadata_startup_script = file("../create_backend.sh")
 }
 
 # Create frontend template
 resource "google_compute_instance_template" "template_mdc_frontend" {
-  name = "${var.app_name}-mdc-backend-template"
+  name = "${var.app_name}-frontend-template"
   description = "This template is used to create Angular"
-  instance_description = "Web Server running Apache"
+  instance_description = "Web Server running Angular"
   can_ip_forward = false
   machine_type = "g1-small"
   tags = ["ssh","http"]
@@ -199,20 +199,20 @@ resource "google_compute_instance_template" "template_mdc_frontend" {
   
   network_interface {
     network = google_compute_network.vpc.name
-    subnetwork = google_compute_subnetwork.private_subnet_1.name
+    subnetwork = google_compute_subnetwork.public_subnet_1.name
   }
   
   lifecycle {
-    create_before_destroy = true
+    create_before_destroy = false
   }
   metadata_startup_script = file("../create_frontend.sh")
 }
 
 # Create worker template
 resource "google_compute_instance_template" "template_mdc_worker" {
-  name = "${var.app_name}-mdc-backend-template"
+  name = "${var.app_name}-worker-template"
   description = "This template is used to celery worker"
-  instance_description = "Web Server running Apache"
+  instance_description = "Web Server running Celery"
   can_ip_forward = false
   machine_type = "g1-small"
   tags = ["ssh","http"]
@@ -228,20 +228,20 @@ resource "google_compute_instance_template" "template_mdc_worker" {
   
   network_interface {
     network = google_compute_network.vpc.name
-    subnetwork = google_compute_subnetwork.private_subnet_1.name
+    subnetwork = google_compute_subnetwork.public_subnet_1.name
   }
   
   lifecycle {
-    create_before_destroy = true
+    create_before_destroy = false
   }
   metadata_startup_script = file("../create_workers.sh")
 }
 
 # Create nfs template
 resource "google_compute_instance_template" "template_mdc_nfs" {
-  name = "${var.app_name}-mdc-backend-template"
+  name = "${var.app_name}-nfs-template"
   description = "This template is used to create NFS"
-  instance_description = "Web Server running Apache"
+  instance_description = "Web Server running NFS"
   can_ip_forward = false
   machine_type = "g1-small"
   tags = ["ssh","http"]
@@ -257,11 +257,11 @@ resource "google_compute_instance_template" "template_mdc_nfs" {
   
   network_interface {
     network = google_compute_network.vpc.name
-    subnetwork = google_compute_subnetwork.private_subnet_1.name
+    subnetwork = google_compute_subnetwork.public_subnet_1.name
   }
   
   lifecycle {
-    create_before_destroy = true
+    create_before_destroy = false
   }
   metadata_startup_script = file("../create_fileserver.sh")
 }
@@ -355,6 +355,8 @@ resource "google_compute_instance" "apps_mdc_front" {
     }
   }
 
+  deletion_protection = false
+
   // Apply the firewall rule to allow external IPs to access this instance
   tags = ["http-server", "https-server", "ssh", "rdp"]
 }
@@ -385,10 +387,13 @@ resource "google_compute_instance" "apps_mdc_nfs" {
   network_interface {
     network     = google_compute_network.vpc.name
     subnetwork  = google_compute_subnetwork.public_subnet_1.name
+    network_ip = var.private_ip_nfs
 
     access_config {
     }
   }
+  
+  deletion_protection = false
   
   // Apply the firewall rule to allow external IPs to access this instance
   tags = ["http-server", "https-server", "ssh", "rdp"]
@@ -400,9 +405,10 @@ resource "google_compute_instance" "apps_mdc_nfs" {
 
 # database creation
 resource "google_sql_database_instance" "postgres_mdc" {
-  name             = "postgres-instance-designmatch-md"
+  name             = "postgres-instance-designmatch"
   database_version = "POSTGRES_12"
-  
+  deletion_protection = false 
+
   settings {
     tier = "db-f1-micro"
     disk_size = "10"
@@ -427,7 +433,7 @@ resource "google_sql_database_instance" "postgres_mdc" {
       authorized_networks {
         value = "0.0.0.0/0"
         }
-      }
+      } 
   }
 }
 
@@ -529,7 +535,7 @@ resource "google_compute_url_map" "url_map" {
 
 # automatically scale virtual machine instances in managed instance groups according to an autoscaling policy
 resource "google_compute_autoscaler" "autoscaler-back" {
-  name    = "mdc-autoscaler-back"
+  name    = "${var.app_name}-autoscaler-back"
   project = var.project_gcp
   zone    = var.zone_gcp
   target  = google_compute_instance_group_manager.back_private_group.self_link
@@ -546,7 +552,7 @@ resource "google_compute_autoscaler" "autoscaler-back" {
 }
 
 resource "google_compute_autoscaler" "autoscaler_worker" {
-  name    = "mdc-autoscaler-worker"
+  name    = "${var.app_name}-autoscaler-worker"
   project = var.project_gcp
   zone    = var.zone_gcp
   target  = google_compute_instance_group_manager.worker_private_group.self_link

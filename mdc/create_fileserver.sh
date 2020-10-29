@@ -36,4 +36,4 @@ sudo systemctl restart nfs-kernel-server
 
 
 # Allow firewall
-sudo ufw allow from 10.128.0.0/20 to any port nfs
+sudo ufw allow from 10.138.0.0/20 to any port nfs

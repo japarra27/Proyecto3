@@ -18,14 +18,14 @@ variable "project_gcp" {
 variable "region_gcp" {
   description = "Name of the GCP region"
   type        = string
-  default     = "us-central1"
+  default     = "us-west1"
 }
 
 #gcp zone name
 variable "zone_gcp" {
   description = "Name of the GCP zone"
   type        = string
-  default     = "us-central1-b"
+  default     = "us-west1-b"
 }
 
 # name of the application project
@@ -50,11 +50,11 @@ variable "password" {
   type        = string
 }
 
-# gcp Cloud-SQL private ip
-variable "private_ip_db" {
-  description = "private ip adress from VPC to the database"
-  type        = string
-}
+# # gcp Cloud-SQL private ip
+# variable "private_ip_db" {
+#   description = "private ip adress from VPC to the database"
+#   type        = string
+# }
 
 # gcp compute engine - number of instances
 variable "node_count" {
@@ -69,17 +69,17 @@ variable "public_subnet_cidr_1" {
   description = "Public subnet CIDR 1"
 }
 
-# define Private subnet
-variable "private_subnet_cidr_1" {
-  type = string
-  description = "Private subnet CIDR 1"
-}
+# # define Private subnet
+# variable "private_subnet_cidr_1" {
+#   type = string
+#   description = "Private subnet CIDR 1"
+# }
 
-# specific cidr postgres instacne
-variable "db_instance_access_cidr" {
-  description = "The IPv4 CIDR to provide access the database instance"
-  type        = string
-}
+# # specific cidr postgres instacne
+# variable "db_instance_access_cidr" {
+#   description = "The IPv4 CIDR to provide access the database instance"
+#   type        = string
+# }
 
 # gcp nfs private ip
 variable "private_ip_nfs" {

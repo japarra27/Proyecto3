@@ -32,7 +32,7 @@ sudo chmod 777 -R /opt/app
 
 # mount the nfs
 sudo mkdir -p /mnt/fileserver
-sudo mount 10.128.0.2:/mnt/fileserver /mnt/fileserver
+sudo mount 10.138.0.2:/mnt/fileserver /mnt/fileserver
 
 # Start service via nohup
 sudo supervisorctl start celery
