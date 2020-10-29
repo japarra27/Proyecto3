@@ -1,4 +1,4 @@
-# [START getting_started_gce_startup_script]
+#!/bin/bash
 # Install Stackdriver logging agent
 sudo curl -sSO https://dl.google.com/cloudagents/install-logging-agent.sh
 sudo bash install-logging-agent.sh

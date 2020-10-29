@@ -1,5 +1,6 @@
-# Create frontend
+#!/bin/bash
 
+# Create frontend
 # [START getting_started_gce_startup_script]
 # Install Stackdriver logging agent
 sudo curl -sSO https://dl.google.com/cloudagents/install-logging-agent.sh

@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # [START getting_started_gce_startup_script]
 # follow the tutorial https://cloud.google.com/community/tutorials/setting-up-redis
 # Install Stackdriver logging agent

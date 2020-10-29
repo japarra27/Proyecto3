@@ -1,3 +1,4 @@
+#!/bin/bash
 # Create fileserver
 
 # [START getting_started_gce_startup_script]
