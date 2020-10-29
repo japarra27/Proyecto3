@@ -324,6 +324,7 @@ resource "google_compute_instance" "apps_mdc_front" {
   network_interface {
     network     = google_compute_network.vpc.name
     subnetwork  = google_compute_subnetwork.public_subnet_1.name
+    network_ip = var.private_ip_front
 
     access_config {
       nat_ip = google_compute_address.static_mdc_front.address

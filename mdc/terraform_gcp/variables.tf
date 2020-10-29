@@ -87,6 +87,12 @@ variable "private_ip_nfs" {
   type        = string
 }
 
+# gcp front private ip
+variable "private_ip_front" {
+  description = "private ip adress from VPC to the front"
+  type        = string
+}
+
 # maximum number of VMs for load balancer autoscale
 variable "lb_max_replicas" {
   type        = string
