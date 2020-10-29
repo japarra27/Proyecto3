@@ -8,6 +8,9 @@ sudo bash install-logging-agent.sh
 # Fetch source code
 export HOME=/root
 sudo git clone https://github.com/japarra27/Proyecto3.git /opt/app
+
+# permision front project
+sudo chmod 777 -R /opt/app
 cd /opt/app/mdc/frontend
 
 # Install or update needed software
@@ -19,8 +22,7 @@ sudo npm install -y -g @angular/cli
 sudo npm install -y tslib
 
 # Account to own server process
-useradd -m -d /home/pythonapp pythonapp
-sudo chmod 777 -R /opt/app
+sudo useradd -m -d /home/pythonapp pythonapp
 sudo touch /var/log/ng.log
 sudo chmod 777 /var/log/ng.log
 

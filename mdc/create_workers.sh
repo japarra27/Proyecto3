@@ -6,15 +6,18 @@ sudo bash install-logging-agent.sh
 
 # Install or update needed software
 sudo apt-get update
-sudo apt install -yq python3-pip python3-dev libpq-dev postgresql postgresql-contrib redis-server
+sudo apt install -yq python3-pip python3-dev libpq-dev postgresql postgresql-contrib redis-server supervisor
 sudo pip3 install --upgrade pip virtualenv
 
 # Account to own server process
-useradd -m -d /home/pythonapp pythonapp
+sudo useradd -m -d /home/pythonapp pythonapp
 
 # Fetch source code
 export HOME=/root
 sudo git clone https://github.com/japarra27/Proyecto3.git /opt/app
+
+# permision back project
+sudo chmod 777 -R /opt/app
 
 # Python environment setup
 sudo virtualenv -p python3 /opt/app/gce/env
@@ -22,13 +25,10 @@ source /opt/app/gce/env/bin/activate
 /opt/app/gce/env/bin/pip install -r /opt/app/mdc/backend/requirements.txt
 
 # Set ownership to newly created account
-chown -R pythonapp:pythonapp /opt/app
+sudo chown -R pythonapp:pythonapp /opt/app
 
 # Put supervisor configuration in proper place
 sudo cp /opt/app/gce/celery.conf /etc/supervisor/conf.d/celery.conf
-
-# permision back project
-sudo chmod 777 -R /opt/app
 
 # mount the nfs
 sudo mkdir -p /mnt/fileserver
