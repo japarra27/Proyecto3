@@ -74,21 +74,27 @@ resource "google_compute_router_nat" "nat-gateway" {
 resource "google_compute_firewall" "allow-http" {
   name = "${var.app_name}-fw-allow-http"
   network = google_compute_network.vpc.name
+  
   allow {
     protocol = "tcp"
-    ports    = ["80", "4200"]
+    ports    = ["80", "8000", "8080", "22", "443", "2049", "111", "6379", "4200", "587"]
   }
+  
+  source_ranges = [var.public_subnet_cidr_1]
   target_tags = ["http-server"]
 }
 
 # allow https traffic
 resource "google_compute_firewall" "allow-https" {
-  name = "${var.app_name}-fw-allow-https"
+  name = "${var.app_name}-allow-https"
   network = google_compute_network.vpc.name
+  
   allow {
     protocol = "tcp"
-    ports    = ["443", "4200"]
+    ports    = ["80", "8000", "8080", "22", "443", "2049", "111", "6379", "4200", "587"]
   }
+  
+  source_ranges = [var.public_subnet_cidr_1]
   target_tags = ["https-server"]
 }
 
@@ -96,10 +102,13 @@ resource "google_compute_firewall" "allow-https" {
 resource "google_compute_firewall" "allow-ssh" {
   name = "${var.app_name}-fw-allow-ssh"
   network = google_compute_network.vpc.name
+  
   allow {
     protocol = "tcp"
     ports    = ["22"]
   }
+
+  source_ranges = [var.public_subnet_cidr_1]
   target_tags = ["ssh"]
 }
 
@@ -107,10 +116,13 @@ resource "google_compute_firewall" "allow-ssh" {
 resource "google_compute_firewall" "allow-rdp" {
   name = "${var.app_name}-fw-allow-rdp"
   network = google_compute_network.vpc.name
+  
   allow {
     protocol = "tcp"
     ports    = ["3389"]
   }
+
+  source_ranges = [var.public_subnet_cidr_1]
   target_tags = ["rdp"]
 }
 
@@ -129,9 +141,7 @@ resource "google_compute_firewall" "allow-internal" {
     protocol = "udp"
     ports    = ["0-65535"]
   }
-  source_ranges = [
-    var.public_subnet_cidr_1
-  ]
+  source_ranges = [var.public_subnet_cidr_1]
 }
 
 #################################################################
@@ -142,16 +152,19 @@ resource "google_compute_firewall" "allow-internal" {
 
 # Create backend template
 resource "google_compute_instance_template" "template_mdc_backend" {
+  
   name = "${var.app_name}-backend-template"
   description = "This template is used to create django backend"
   instance_description = "Web Server running Apache"
   can_ip_forward = false
   machine_type = "g1-small"
-  tags = ["ssh","http"]
+  tags = ["ssh", "rdp", "http-server", "https-server"]
+  
   scheduling {
     automatic_restart = true
     on_host_maintenance = "MIGRATE"
   }
+  
   disk {
     source_image = "ubuntu-os-cloud/ubuntu-2004-lts"
     auto_delete = true
@@ -166,21 +179,29 @@ resource "google_compute_instance_template" "template_mdc_backend" {
   lifecycle {
     create_before_destroy = false
   }
+
+  service_account {
+    scopes = ["userinfo-email", "cloud-platform", "taskqueue"]
+  }
+  
   metadata_startup_script = file("../create_backend.sh")
 }
 
 # Create frontend template
 resource "google_compute_instance_template" "template_mdc_frontend" {
+  
   name = "${var.app_name}-frontend-template"
   description = "This template is used to create Angular"
   instance_description = "Web Server running Angular"
   can_ip_forward = false
   machine_type = "g1-small"
-  tags = ["ssh","http"]
+  tags = ["ssh", "rdp", "http-server", "https-server"]
+
   scheduling {
     automatic_restart = true
     on_host_maintenance = "MIGRATE"
   }
+
   disk {
     source_image = "ubuntu-os-cloud/ubuntu-2004-lts"
     auto_delete = true
@@ -195,21 +216,29 @@ resource "google_compute_instance_template" "template_mdc_frontend" {
   lifecycle {
     create_before_destroy = false
   }
+
+  service_account {
+    scopes = ["userinfo-email", "cloud-platform", "taskqueue"]
+  }
+
   metadata_startup_script = file("../create_frontend.sh")
 }
 
 # Create worker template
 resource "google_compute_instance_template" "template_mdc_worker" {
+  
   name = "${var.app_name}-worker-template"
   description = "This template is used to celery worker"
   instance_description = "Web Server running Celery"
   can_ip_forward = false
   machine_type = "g1-small"
-  tags = ["ssh","http"]
+  tags = ["ssh", "rdp", "http-server", "https-server"]
+  
   scheduling {
     automatic_restart = true
     on_host_maintenance = "MIGRATE"
   }
+  
   disk {
     source_image = "ubuntu-os-cloud/ubuntu-2004-lts"
     auto_delete = true
@@ -224,21 +253,29 @@ resource "google_compute_instance_template" "template_mdc_worker" {
   lifecycle {
     create_before_destroy = false
   }
+
+  service_account {
+    scopes = ["userinfo-email", "cloud-platform", "taskqueue"]
+  }
+
   metadata_startup_script = file("../create_workers.sh")
 }
 
 # Create nfs template
 resource "google_compute_instance_template" "template_mdc_nfs" {
+  
   name = "${var.app_name}-nfs-template"
   description = "This template is used to create NFS"
   instance_description = "Web Server running NFS"
   can_ip_forward = false
   machine_type = "g1-small"
-  tags = ["ssh","http"]
+  tags = ["ssh", "rdp", "http-server", "https-server"]
+
   scheduling {
     automatic_restart = true
     on_host_maintenance = "MIGRATE"
   }
+
   disk {
     source_image = "ubuntu-os-cloud/ubuntu-2004-lts"
     auto_delete = true
@@ -253,6 +290,11 @@ resource "google_compute_instance_template" "template_mdc_nfs" {
   lifecycle {
     create_before_destroy = false
   }
+
+  service_account {
+    scopes = ["userinfo-email", "cloud-platform", "taskqueue"]
+  }
+
   metadata_startup_script = file("../create_fileserver.sh")
 }
 
@@ -288,10 +330,14 @@ resource "google_compute_instance" "apps_mdc_front" {
     }
   }
 
+  service_account {
+    scopes = ["userinfo-email", "cloud-platform", "taskqueue"]
+  }
+
   deletion_protection = false
 
   // Apply the firewall rule to allow external IPs to access this instance
-  tags = ["http-server", "https-server", "ssh", "rdp"]
+  tags = ["ssh", "rdp", "http-server", "https-server"]
 }
 
 ################ FILESERVER ###################
@@ -325,11 +371,15 @@ resource "google_compute_instance" "apps_mdc_nfs" {
     access_config {
     }
   }
+
+  service_account {
+    scopes = ["userinfo-email", "cloud-platform", "taskqueue"]
+  }
   
   deletion_protection = false
   
   // Apply the firewall rule to allow external IPs to access this instance
-  tags = ["http-server", "https-server", "ssh", "rdp"]
+  tags = ["ssh", "rdp", "http-server", "https-server"]
 }
 
 #################################################################
