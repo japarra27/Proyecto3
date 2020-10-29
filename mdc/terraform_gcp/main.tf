@@ -36,16 +36,6 @@ resource "google_compute_network" "vpc" {
   routing_mode = "GLOBAL"
 }
 
-# # create private subnet
-# resource "google_compute_subnetwork" "private_subnet_1" {
-#  provider = google-beta
-#  purpose = "PRIVATE"
-#  name = "${var.app_name}-private-subnet-1"
-#  ip_cidr_range = var.private_subnet_cidr_1
-#  network = google_compute_network.vpc.name
-#  region = var.region_gcp
-# }
-
 # create public subnet
 resource "google_compute_subnetwork" "public_subnet_1" {
   name = "${var.app_name}-public-subnet-1"
@@ -148,7 +138,7 @@ resource "google_compute_firewall" "allow-internal" {
 ################ COMPUTE ENGINE CONFIGURATION ###################
 #################################################################
 
-############################ TEMPLAES ###########################
+########################### TEMPLATES ###########################
 
 # Create backend template
 resource "google_compute_instance_template" "template_mdc_backend" {
@@ -265,63 +255,6 @@ resource "google_compute_instance_template" "template_mdc_nfs" {
   }
   metadata_startup_script = file("../create_fileserver.sh")
 }
-
-################ BACKEND ###################
-
-# # create the compute engine instance backend - MDC
-# resource "google_compute_instance" "apps_mdc_back" {
-#   count        = 1
-#   name         = "${var.app_name}-backend-${count.index + 1}"
-#   machine_type = "n2-standard-2"
-#   zone         = var.zone_gcp
-#   allow_stopping_for_update = true
-
-#   boot_disk {
-#     initialize_params {
-#       image = "ubuntu-1804-bionic-v20200908"
-#     }
-#   }
-
-#   metadata_startup_script = file("../create_backend.sh")
-
-#   network_interface {
-#     network     = google_compute_network.vpc.name
-#     subnetwork  = google_compute_subnetwork.public_subnet_1.name
-
-#     access_config {
-#     }
-#   }
-
-#   // Apply the firewall rule to allow external IPs to access this instance
-#   tags = ["http-server", "https-server", "ssh", "rdp"]
-# }
-
-################ WORKERS ###################
-
-# create the compute engine instance worker - MDC
-# resource "google_compute_instance" "apps_mdc_worker" {
-#   count        = 1
-#   name         = "${var.app_name}-worker-${count.index + 1}"
-#   machine_type = "n2-standard-2"
-#   zone         = var.zone_gcp
-#   allow_stopping_for_update = true
-
-#   boot_disk {
-#     initialize_params {
-#       image = "ubuntu-1804-bionic-v20200908"
-#     }
-#   }
-
-#   metadata_startup_script = file("../create_workers.sh")
-
-#   network_interface {
-#     network     = google_compute_network.vpc.name
-#     subnetwork  = google_compute_subnetwork.public_subnet_1.name
-
-#     access_config {
-#     }
-#   }
-# }
 
 ################ FRONTEND ###################
 
@@ -450,10 +383,11 @@ resource "google_sql_user" "users_mdc" {
   password = var.password
 }
 
-
+#########################################################
 ################# HTTP LOAD BALANCER ####################
+#########################################################
 
- #Load balancer with managed instance group and autoscale | lb-unmanaged.tf
+ #Load balancer with managed instance group and autoscale
 
 # used to forward traffic to the correct load balancer for HTTP load balancing 
 resource "google_compute_global_forwarding_rule" "global_forwarding_rule" {
@@ -546,7 +480,7 @@ resource "google_compute_autoscaler" "autoscaler-back" {
     cooldown_period = var.lb_cooldown_period
 
     cpu_utilization {
-      target = 0.8
+      target = 0.7
     }
   }
 }
@@ -563,12 +497,7 @@ resource "google_compute_autoscaler" "autoscaler_worker" {
     cooldown_period = var.lb_cooldown_period
 
     cpu_utilization {
-      target = 0.8
+      target = 0.7
     }
   }
-}
-
-# show external ip address of load balancer
-output "load-balancer-ip-address" {
-  value = google_compute_global_forwarding_rule.global_forwarding_rule.ip_address
 }
