@@ -417,7 +417,6 @@ resource "google_sql_database_instance" "postgres_mdc" {
       }
       
     ip_configuration {
-      private_network = google_compute_network.vpc.self_link
       ipv4_enabled = true
       authorized_networks {
         value = "0.0.0.0/0"
