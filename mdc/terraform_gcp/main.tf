@@ -77,7 +77,7 @@ resource "google_compute_firewall" "allow-http" {
   
   allow {
     protocol = "tcp"
-    ports    = ["80", "8000", "8080", "22", "443", "2049", "111", "6379", "4200", "587"]
+    ports    = ["80", "8080", "22", "443", "2049", "111", "6379", "4200", "587"]
   }
   
   source_ranges = ["0.0.0.0/0"]
@@ -91,7 +91,7 @@ resource "google_compute_firewall" "allow-https" {
   
   allow {
     protocol = "tcp"
-    ports    = ["80", "8000", "8080", "22", "443", "2049", "111", "6379", "4200", "587"]
+    ports    = ["80", "8080", "22", "443", "2049", "111", "6379", "4200", "587"]
   }
   
   source_ranges = ["0.0.0.0/0"]
@@ -450,7 +450,7 @@ resource "google_compute_global_forwarding_rule" "global_forwarding_rule" {
   name       = "${var.app_name}-${var.app_environment}-global-forwarding-rule"
   project    = var.project_gcp
   target     = google_compute_target_http_proxy.target_http_proxy.self_link
-  port_range = "80"
+  port_range = 8080
 }
 
 # used by one or more global forwarding rule to route incoming HTTP requests to a URL map
@@ -487,7 +487,7 @@ resource "google_compute_instance_group_manager" "back_private_group" {
   }
   named_port {
     name = "http"
-    port = 80
+    port = 8080
   }
 }
 
@@ -502,7 +502,7 @@ resource "google_compute_instance_group_manager" "worker_private_group" {
   }
   named_port {
     name = "http"
-    port = 80
+    port = 8080
   }
 }
 
@@ -512,7 +512,7 @@ resource "google_compute_health_check" "healthcheck" {
   timeout_sec        = 1
   check_interval_sec = 1
   http_health_check {
-    port = 80
+    port = 8080
   }
 }
 
