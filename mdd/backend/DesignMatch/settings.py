@@ -40,15 +40,17 @@ CORS_ORIGIN_ALLOW_ALL = True
 
 
 # CELERY CONFIGURATION
-CELERY_BROKER_URL= os.getenv("DJANGO_BROKER_URL_MDB")
+CELERY_BROKER_URL= "redis://10.57.0.4:6379/1"
 CELERY_TIMEZONE = 'America/Bogota'
+
+# Cache time to live is 15 minutes.
+CACHE_TTL = 60 * 15
 
 CACHES = {
     "default": {
         "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": os.getenv("CELERY_CACHES_LOCATION"),
+        "LOCATION": "redis://10.57.0.4:6379/1",
         "OPTIONS": {
-            "PASSWORD": os.getenv("CELERY_CACHES_PASSWORD"),
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
         }
     }
@@ -75,6 +77,7 @@ INSTALLED_APPS = [
     'apirest',
     'django_celery_beat',
     'corsheaders',
+    'storages',
 ]
 
 REST_FRAMEWORK = {
@@ -177,5 +180,17 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
 
-STATIC_URL = '/static/'
-MEDIA_ROOT = '/mnt/'
+GS_BUCKET_NAME = "dsc-proyectos-mdd-cdn-bucket"
+
+MEDIA_URL = 'https://storage.googleapis.com/{}/'.format(GS_BUCKET_NAME)
+MEDIA_ROOT = "mnt/"
+
+STATIC_URL = 'https://storage.googleapis.com/{}/'.format(GS_BUCKET_NAME)
+STATIC_ROOT = "static/"
+
+
+# Define static storage via django-storages[google]
+STATICFILES_DIRS = []
+DEFAULT_FILE_STORAGE = "storages.backends.gcloud.GoogleCloudStorage"
+STATICFILES_STORAGE = "storages.backends.gcloud.GoogleCloudStorage"
+GS_DEFAULT_ACL = "publicRead"

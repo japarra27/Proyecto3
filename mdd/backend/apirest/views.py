@@ -6,9 +6,12 @@ from rest_framework import status, generics
 from django.contrib.auth.models import User
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
+from django.core.cache.backends.base import DEFAULT_TIMEOUT
 from apirest.serializers import *
 from django.core.mail import send_mail
 from django.conf import settings
+
+CACHE_TTL = getattr(settings, 'CACHE_TTL', DEFAULT_TIMEOUT)
 
 # Create your views here.
 class UserCreateAPIView(generics.CreateAPIView):
@@ -29,6 +32,7 @@ class Projects(APIView):
             return Response(serializer.data, status = status.HTTP_201_CREATED)
         return Response(serializer.errors, status = status.HTTP_400_BAD_REQUEST)
 
+@cache_page(CACHE_TTL)
 class ProjectDetail(APIView):
     permission_classes = (IsAuthenticated,)
 
@@ -60,6 +64,7 @@ class ProjectDetail(APIView):
         project.delete()
         return Response(status = status.HTTP_204_NO_CONTENT)
 
+@cache_page(CACHE_TTL)
 class Designs(APIView):
     permission_classes = (AllowAny,)
 
@@ -76,6 +81,7 @@ class Designs(APIView):
             return Response(serializer.data, status = status.HTTP_201_CREATED)
         return Response(serializer.errors, status = status.HTTP_400_BAD_REQUEST)
 
+@cache_page(CACHE_TTL)
 class DesignDetail(APIView):
     def get(self, request, project_id, design_id):
         try:

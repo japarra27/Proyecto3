@@ -25,9 +25,7 @@ provider "google-beta" {
   zone        = var.zone_gcp
 }
 
-locals {
-  cdn_domain = "exampledomain.com" # Change this to your domain. You’ll be able to access CDN on this hostname.
-}
+locals {cdn_domain = var.private_ip_front}
 
 #################################################################
 #################### NETWORK CONFIGURATION ######################
@@ -273,43 +271,6 @@ resource "google_compute_instance_template" "template_mdd_worker" {
   metadata_startup_script = file("../create_workers.sh")
 }
 
-# Create nfs template
-resource "google_compute_instance_template" "template_mdd_nfs" {
-  
-  name = "${var.app_name}-nfs-template"
-  description = "This template is used to create NFS"
-  instance_description = "Web Server running NFS"
-  can_ip_forward = false
-  machine_type = "g1-small"
-  tags = ["ssh", "rdp", "http-server", "https-server"]
-
-  scheduling {
-    automatic_restart = true
-    on_host_maintenance = "MIGRATE"
-  }
-
-  disk {
-    source_image = "ubuntu-os-cloud/ubuntu-2004-lts"
-    auto_delete = true
-    boot = true
-  }
-  
-  network_interface {
-    network = google_compute_network.vpc.name
-    subnetwork = google_compute_subnetwork.public_subnet_1.name
-  }
-  
-  lifecycle {
-    create_before_destroy = false
-  }
-
-  service_account {
-    scopes = ["userinfo-email", "cloud-platform", "taskqueue"]
-  }
-
-  metadata_startup_script = file("../create_fileserver.sh")
-}
-
 ################ FRONTEND ###################
 
 # Compute address - static_ip frontend - mdd
@@ -353,104 +314,6 @@ resource "google_compute_instance" "apps_mdd_front" {
   tags = ["ssh", "rdp", "http-server", "https-server"]
 }
 
-################ FILESERVER ###################
-
-# Compute address - static_ip fileserver - mdd
-resource "google_compute_address" "static_mdd_nfs" {
-  name      = "ipv4-address-static-ip-mddnfs"
-}
-
-# create the compute engine instance fileserver - mdd
-resource "google_compute_instance" "apps_mdd_nfs" {
-  count        = 1
-  name         = "${var.app_name}-nfs-${count.index + 1}"
-  machine_type = "g1-small"
-  zone         = var.zone_gcp
-  allow_stopping_for_update = true
-
-  boot_disk {
-    initialize_params {
-      image = "ubuntu-2004-lts"
-    }
-  }
-
-  metadata_startup_script = file("../create_fileserver.sh")
-
-  network_interface {
-    network     = google_compute_network.vpc.name
-    subnetwork  = google_compute_subnetwork.public_subnet_1.name
-    network_ip = var.private_ip_nfs
-
-    access_config {
-    }
-  }
-
-  service_account {
-    scopes = ["userinfo-email", "cloud-platform", "taskqueue"]
-  }
-  
-  deletion_protection = false
-  
-  // Apply the firewall rule to allow external IPs to access this instance
-  tags = ["ssh", "rdp", "http-server", "https-server"]
-}
-
-#################################################################
-################### DATABASE CONFIGURATION ######################
-#################################################################
-
-#Variable aleatoria
-resource "random_id" "db_name_suffix" {
-  byte_length = 4
-  }
-
-# database creation
-resource "google_sql_database_instance" "postgres_mdd" {
-  name             = "postgres-instance-designmatch-${random_id.db_name_suffix.hex}"
-  database_version = "POSTGRES_12"
-  deletion_protection = false 
-
-  settings {
-    tier = "db-f1-micro"
-    disk_size = "10"
-    disk_type = "PD_SSD"
-
-    location_preference {
-      zone = var.zone_gcp
-      }
-   
-    maintenance_window {
-      day  = "7"  # sunday
-      hour = "3" # 3am
-      }
-   
-    backup_configuration {
-      enabled = true
-      start_time = "00:00"
-      }
-      
-    ip_configuration {
-      ipv4_enabled = true
-      authorized_networks {
-        value = "0.0.0.0/0"
-        }
-      } 
-  }
-}
-
-# database name
-resource "google_sql_database" "database_mdd" {
-  name     = "designmatch-mdd"
-  instance = google_sql_database_instance.postgres_mdd.name
-}
-
-# database username
-resource "google_sql_user" "users_mdd" {
-  name     = "designmatchadmin"
-  instance = google_sql_database_instance.postgres_mdd.name
-  password = var.password
-}
-
 #########################################################
 ################# HTTP LOAD BALANCER ####################
 #########################################################
@@ -460,7 +323,7 @@ resource "google_sql_user" "users_mdd" {
 # Compute address - static_ip frontend - mdd
 resource "google_compute_global_address" "static_mdd_loadbalancer" {
   name = "ipv4-address-static-ip-mddlb"
-  address = "35.244.234.28"
+  address = " 34.120.12.232"
 }
 
 # used to forward traffic to the correct load balancer for HTTP load balancing 
