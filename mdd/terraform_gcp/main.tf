@@ -326,6 +326,11 @@ resource "google_compute_global_address" "static_mdd_loadbalancer" {
   address = "34.120.12.232"
 }
 
+resource "google_compute_global_address" "static_mdd_loadbalancer_worker" {
+  name = "ipv4-address-static-ip-mddlb"
+  address = "34.120.12.232"
+}
+
 # used to forward traffic to the correct load balancer for HTTP load balancing 
 resource "google_compute_global_forwarding_rule" "global_forwarding_rule" {
   name       = "${var.app_name}-${var.app_environment}-global-forwarding-rule"
@@ -335,11 +340,26 @@ resource "google_compute_global_forwarding_rule" "global_forwarding_rule" {
   ip_address = google_compute_global_address.static_mdd_loadbalancer.address
 }
 
+# used to forward traffic to the correct load balancer for HTTP load balancing 
+resource "google_compute_global_forwarding_rule" "global_forwarding_rule_worker" {
+  name       = "${var.app_name}-${var.app_environment}-global-forwarding-rule-worker"
+  project    = var.project_gcp
+  target     = google_compute_target_http_proxy.target_http_proxy.self_link
+  port_range = 80
+  ip_address = google_compute_global_address.static_mdd_loadbalancer_worker.address
+}
+
 # used by one or more global forwarding rule to route incoming HTTP requests to a URL map
 resource "google_compute_target_http_proxy" "target_http_proxy" {
   name    = "${var.app_name}-${var.app_environment}-proxy"
   project = var.project_gcp
   url_map = google_compute_url_map.url_map.self_link
+}
+
+resource "google_compute_target_http_proxy" "target_http_proxy_worker" {
+  name    = "${var.app_name}-${var.app_environment}-proxy-worker"
+  project = var.project_gcp
+  url_map = google_compute_url_map.url_map_worker.self_link
 }
 
 # defines a group of virtual machines that will serve traffic for load balancing
@@ -354,7 +374,7 @@ resource "google_compute_backend_service" "backend_service" {
   backend {
     group                 = google_compute_instance_group_manager.back_private_group.instance_group
     balancing_mode        = "RATE"
-    max_rate_per_instance = 100
+    max_rate_per_instance = 80
   }
 }
 
@@ -370,7 +390,7 @@ resource "google_compute_backend_service" "worker_service" {
   backend {
     group                 = google_compute_instance_group_manager.back_private_group.instance_group
     balancing_mode        = "RATE"
-    max_rate_per_instance = 100
+    max_rate_per_instance = 80
   }
 }
 

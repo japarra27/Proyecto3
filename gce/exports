@@ -8,4 +8,4 @@
 # /srv/nfs4        gss/krb5i(rw,sync,fsid=0,crossmnt,no_subtree_check)
 # /srv/nfs4/homes  gss/krb5i(rw,sync,no_subtree_check)
 #
-/mnt/fileserver 10.138.0.0/20(rw,sync,no_subtree_check)
+/mnt/fileserver 10.142.0.0/20(rw,sync,no_subtree_check)
