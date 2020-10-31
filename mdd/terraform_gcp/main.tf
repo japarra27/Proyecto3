@@ -387,7 +387,7 @@ resource "google_compute_backend_service" "worker_service" {
   health_checks           = [google_compute_health_check.healthcheck_worker.self_link]
 
   backend {
-    group                 = google_compute_instance_group_manager.back_private_group.instance_group
+    group                 = google_compute_instance_group_manager.worker_private_group.instance_group
     balancing_mode        = "RATE"
     max_rate_per_instance = 80
   }
