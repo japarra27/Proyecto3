@@ -25,7 +25,7 @@ provider "google-beta" {
   zone        = var.zone_gcp
 }
 
-locals {cdn_domain = var.private_ip_front}
+locals {cdn_domain = "designmatchgcp.com"}
 
 #################################################################
 #################### NETWORK CONFIGURATION ######################
