@@ -72,7 +72,7 @@ resource "google_compute_router_nat" "nat-gateway" {
 
 # allow http traffic
 resource "google_compute_firewall" "allow-http" {
-  name = "${var.app_name}-fw-allow-http"
+  name = "${var.app_name}-allow-http"
   network = google_compute_network.vpc.name
   
   allow {
@@ -100,7 +100,7 @@ resource "google_compute_firewall" "allow-https" {
 
 # allow ssh traffic
 resource "google_compute_firewall" "allow-ssh" {
-  name = "${var.app_name}-fw-allow-ssh"
+  name = "${var.app_name}-allow-ssh"
   network = google_compute_network.vpc.name
   
   allow {
@@ -114,7 +114,7 @@ resource "google_compute_firewall" "allow-ssh" {
 
 # allow rdp traffic
 resource "google_compute_firewall" "allow-rdp" {
-  name = "${var.app_name}-fw-allow-rdp"
+  name = "${var.app_name}-allow-rdp"
   network = google_compute_network.vpc.name
   
   allow {
@@ -128,7 +128,7 @@ resource "google_compute_firewall" "allow-rdp" {
 
 # allow internal
 resource "google_compute_firewall" "allow-internal" {
-  name    = "${var.app_name}-fw-allow-internal"
+  name    = "${var.app_name}-allow-internal"
   network = google_compute_network.vpc.name
   allow {
     protocol = "icmp"
@@ -174,6 +174,9 @@ resource "google_compute_instance_template" "template_mdc_backend" {
   network_interface {
     network = google_compute_network.vpc.name
     subnetwork = google_compute_subnetwork.public_subnet_1.name
+
+      access_config {  
+    }
   }
   
   lifecycle {
@@ -211,6 +214,9 @@ resource "google_compute_instance_template" "template_mdc_frontend" {
   network_interface {
     network = google_compute_network.vpc.name
     subnetwork = google_compute_subnetwork.public_subnet_1.name
+
+      access_config {  
+    }
   }
   
   lifecycle {
@@ -248,8 +254,10 @@ resource "google_compute_instance_template" "template_mdc_worker" {
   network_interface {
     network = google_compute_network.vpc.name
     subnetwork = google_compute_subnetwork.public_subnet_1.name
+
+  access_config {  
+    }
   }
-  
   lifecycle {
     create_before_destroy = false
   }
@@ -450,7 +458,7 @@ resource "google_compute_global_forwarding_rule" "global_forwarding_rule" {
   name       = "${var.app_name}-${var.app_environment}-global-forwarding-rule"
   project    = var.project_gcp
   target     = google_compute_target_http_proxy.target_http_proxy.self_link
-  port_range = "80"
+  port_range = "8080"
 }
 
 # used by one or more global forwarding rule to route incoming HTTP requests to a URL map
@@ -487,7 +495,7 @@ resource "google_compute_instance_group_manager" "back_private_group" {
   }
   named_port {
     name = "http"
-    port = 80
+    port = 8080
   }
 }
 
@@ -500,10 +508,10 @@ resource "google_compute_instance_group_manager" "worker_private_group" {
   version {
     instance_template  = google_compute_instance_template.template_mdc_worker.self_link
   }
-  named_port {
-    name = "http"
-    port = 80
-  }
+  # named_port {
+  #   name = "http"
+  #   port = 80
+  # }
 }
 
 # determine whether instances are responsive and able to do work
@@ -512,7 +520,7 @@ resource "google_compute_health_check" "healthcheck" {
   timeout_sec        = 1
   check_interval_sec = 1
   http_health_check {
-    port = 80
+    port = 8080
   }
 }
 
