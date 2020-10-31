@@ -323,12 +323,11 @@ resource "google_compute_instance" "apps_mdd_front" {
 # Compute address - static_ip frontend - mdd
 resource "google_compute_global_address" "static_mdd_loadbalancer" {
   name = "ipv4-address-static-ip-mddlb"
-  address = "34.120.12.232"
+  address = "107.178.244.5"
 }
 
 resource "google_compute_global_address" "static_mdd_loadbalancer_worker" {
-  name = "ipv4-address-static-ip-mddlb"
-  address = "34.120.12.232"
+  name = "ipv4-address-static-ip-mddlb-worker"
 }
 
 # used to forward traffic to the correct load balancer for HTTP load balancing 
@@ -344,7 +343,7 @@ resource "google_compute_global_forwarding_rule" "global_forwarding_rule" {
 resource "google_compute_global_forwarding_rule" "global_forwarding_rule_worker" {
   name       = "${var.app_name}-${var.app_environment}-global-forwarding-rule-worker"
   project    = var.project_gcp
-  target     = google_compute_target_http_proxy.target_http_proxy.self_link
+  target     = google_compute_target_http_proxy.target_http_proxy_worker.self_link
   port_range = 80
   ip_address = google_compute_global_address.static_mdd_loadbalancer_worker.address
 }

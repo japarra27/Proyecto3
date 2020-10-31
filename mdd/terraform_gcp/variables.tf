@@ -69,24 +69,6 @@ variable "public_subnet_cidr_1" {
   description = "Public subnet CIDR 1"
 }
 
-# # define Private subnet
-# variable "private_subnet_cidr_1" {
-#   type = string
-#   description = "Private subnet CIDR 1"
-# }
-
-# # specific cidr postgres instacne
-# variable "db_instance_access_cidr" {
-#   description = "The IPv4 CIDR to provide access the database instance"
-#   type        = string
-# }
-
-# gcp nfs private ip
-variable "private_ip_nfs" {
-  description = "private ip adress from VPC to the nfs"
-  type        = string
-}
-
 # gcp front private ip
 variable "private_ip_front" {
   description = "private ip adress from VPC to the front"
