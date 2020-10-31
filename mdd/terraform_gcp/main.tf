@@ -323,7 +323,7 @@ resource "google_compute_instance" "apps_mdd_front" {
 # Compute address - static_ip frontend - mdd
 resource "google_compute_global_address" "static_mdd_loadbalancer" {
   name = "ipv4-address-static-ip-mddlb"
-  address = " 34.120.12.232"
+  address = "34.120.12.232"
 }
 
 # used to forward traffic to the correct load balancer for HTTP load balancing 
