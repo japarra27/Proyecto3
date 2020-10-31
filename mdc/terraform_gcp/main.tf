@@ -453,12 +453,19 @@ resource "google_sql_user" "users_mdc" {
 
  #Load balancer with managed instance group and autoscale
 
+# Compute address - static_ip frontend - MDC
+resource "google_compute_global_address" "static_mdc_loadbalancer" {
+  name = "ipv4-address-static-ip-mdclb"
+  address = "35.244.234.27"
+}
+
 # used to forward traffic to the correct load balancer for HTTP load balancing 
 resource "google_compute_global_forwarding_rule" "global_forwarding_rule" {
   name       = "${var.app_name}-${var.app_environment}-global-forwarding-rule"
   project    = var.project_gcp
   target     = google_compute_target_http_proxy.target_http_proxy.self_link
   port_range = "8080"
+  ip_address = google_compute_global_address.static_mdc_loadbalancer.address
 }
 
 # used by one or more global forwarding rule to route incoming HTTP requests to a URL map
