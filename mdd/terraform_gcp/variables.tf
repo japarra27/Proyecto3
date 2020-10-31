@@ -18,14 +18,12 @@ variable "project_gcp" {
 variable "region_gcp" {
   description = "Name of the GCP region"
   type        = string
-  default     = "us-west1"
 }
 
 #gcp zone name
 variable "zone_gcp" {
   description = "Name of the GCP zone"
   type        = string
-  default     = "us-west1-b"
 }
 
 # name of the application project

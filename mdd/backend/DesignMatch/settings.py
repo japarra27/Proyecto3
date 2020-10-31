@@ -40,7 +40,7 @@ CORS_ORIGIN_ALLOW_ALL = True
 
 
 # CELERY CONFIGURATION
-CELERY_BROKER_URL= "redis://10.62.0.4:6379/1"
+CELERY_BROKER_URL= "redis://172.20.0.4:6379/1"
 CELERY_TIMEZONE = 'America/Bogota'
 
 # Cache time to live is 15 minutes.
@@ -49,7 +49,7 @@ CACHE_TTL = 60 * 15
 CACHES = {
     "default": {
         "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": "redis://10.62.0.4:6379/1",
+        "LOCATION": "redis://172.20.0.4:6379/1",
         "OPTIONS": {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
         }

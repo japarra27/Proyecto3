@@ -323,7 +323,7 @@ resource "google_compute_instance" "apps_mdd_front" {
 # Compute address - static_ip frontend - mdd
 resource "google_compute_global_address" "static_mdd_loadbalancer" {
   name = "ipv4-address-static-ip-mddlb"
-  address = "107.178.244.5"
+  #address = "107.178.244.5"
 }
 
 resource "google_compute_global_address" "static_mdd_loadbalancer_worker" {
@@ -516,7 +516,7 @@ resource "google_redis_instance" "cache" {
   tier           = "STANDARD_HA"
   memory_size_gb = 1
 
-  location_id             = "us-west1-b"
+  location_id             = var.zone_gcp
 
   authorized_network = google_compute_network.vpc.id
   connect_mode       = "PRIVATE_SERVICE_ACCESS"
