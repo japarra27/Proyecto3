@@ -6,6 +6,7 @@ from rest_framework import status, generics
 from django.contrib.auth.models import User
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
+from django.views.decorators.cache import cache_page
 from django.core.cache.backends.base import DEFAULT_TIMEOUT
 from apirest.serializers import *
 from django.core.mail import send_mail
