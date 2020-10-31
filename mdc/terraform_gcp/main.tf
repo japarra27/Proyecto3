@@ -464,7 +464,7 @@ resource "google_compute_global_forwarding_rule" "global_forwarding_rule" {
   name       = "${var.app_name}-${var.app_environment}-global-forwarding-rule"
   project    = var.project_gcp
   target     = google_compute_target_http_proxy.target_http_proxy.self_link
-  port_range = "8080"
+  port_range = 80
   ip_address = google_compute_global_address.static_mdc_loadbalancer.address
 }
 
