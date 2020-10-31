@@ -16,7 +16,6 @@ import apirest.tasks
 import os
 from pathlib import Path
 from helpers import env_vars
-from google.oauth2 import service_account
 
 # list of secret keys stored in the gcp secret manager 
 env_keys = env_vars.access_secret_version()
@@ -33,8 +32,8 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = env_keys["DJANGO_PASSWORD"]
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
-SENDGRID_SANDBOX_MODE_IN_DEBUG = False
+DEBUG = True
+SENDGRID_SANDBOX_MODE_IN_DEBUG = False  
 
 ALLOWED_HOSTS = ['*']
 CORS_ORIGIN_ALLOW_ALL = True
@@ -76,7 +75,6 @@ INSTALLED_APPS = [
     'apirest',
     'django_celery_beat',
     'corsheaders',
-    'storages',
 ]
 
 REST_FRAMEWORK = {
@@ -181,10 +179,3 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 MEDIA_ROOT = '/mnt/'
-
-
-DEFAULT_FILE_STORAGE = 'storages.backends.gcloud.GoogleCloudStorage'
-GS_BUCKET_NAME = 'dsc-projects-mdd'
-GS_CREDENTIALS = service_account.Credentials.from_service_account_file(
-    os.path.join(BASE_DIR, "d_my_project-db061d4f5ab2.json")
-)
